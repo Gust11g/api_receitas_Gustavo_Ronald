@@ -112,32 +112,14 @@ receitas = [
     }
 ]
 
-app = FastAPI()
-
-@app.get("/")
-def hello():
-    return {"title": "Livro de Receitas"}
-
 @app.get("/receitas")
-def get_receitas():
-    return {"receitas": receitas}
+def listar_receitas():
+    return receitas
 
-@app.get("/receitas/{nome_da_receita}")
-def get_receita(nome_da_receita: str):
-    nome_da_receita_lower = nome_da_receita.lower()
-    
-    for receita in receitas:
-        if receita["nome"].lower() == nome_da_receita_lower:
+
+@app.get("/receitas/{nome}")
+def buscar_receitas (nome: str):
+    for receitas in receitas:
+        if receitas['nome'].lower() == nome.lower():
             return receita
-    
-    raise HTTPException(status_code=404, detail="Receita não encontrada")
-
-@app.get("/receitas/{nome_da_receita}/ingredientes")
-def get_ingredientes_da_receita(nome_da_receita: str):
-    nome_da_receita_lower = nome_da_receita.lower()
-    
-    for receita in receitas:
-        if receita["nome"].lower() == nome_da_receita_lower:
-            return {"ingredientes": receita["ingredientes"]}
-    
-    
+    return {"erro": "Receita nao encontrada"}          
