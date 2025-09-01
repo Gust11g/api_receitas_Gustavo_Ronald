@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+
+app = FastAPI(title="livro de receitas")
+
 receitas = [
     {
         "nome": "Brigadeiro Tradicional",
@@ -121,5 +124,5 @@ def listar_receitas():
 def buscar_receitas (nome: str):
     for receitas in receitas:
         if receitas['nome'].lower() == nome.lower():
-            return receita
+            return receitas
     return {"erro": "Receita nao encontrada"}          
