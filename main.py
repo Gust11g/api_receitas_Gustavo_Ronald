@@ -122,7 +122,7 @@ def listar_receitas():
 
 @app.get("/receitas/{nome}")
 def buscar_receitas (nome: str):
-    for receitas in receitas:
-        if receitas['nome'].lower() == nome.lower():
-            return receitas
+    for receita in receitas:
+        if receita['nome'].lower() == nome.lower():
+            return receita
     return {"erro": "Receita nao encontrada"}          
