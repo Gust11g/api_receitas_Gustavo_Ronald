@@ -9,6 +9,7 @@ class Receita(BaseModel):
     ingredientes: List[str]
     modo_d_preparo: str
 
+
 '''
 receitas = [
     {
@@ -143,8 +144,15 @@ def get_todas_receitas():
 
 @app.post("/receitas", response_model=Receita, status_code=status.HTTP_201_CREATED)
 def criar_receita(dados: Receita):
-
-    nova_receita = dados
+    novo_id = len(receitas) + 1
+    nova_receita = Receita(
+        id=novo_id,
+        nome=dados.nome,
+        ingredientes=dados.ingredientes,
+        modo_d_preparo=dados.modo_d_preparo
+    )
+    
     receitas.append(nova_receita)
-
     return nova_receita
+@app.get("/receitas/id/{id}")
+def get_receita_por_id():
