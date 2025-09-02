@@ -82,7 +82,7 @@ receitas = [
         "modo de preparo": "Em uma panela, ferva a água, o leite, o óleo e o sal. Despeje essa mistura sobre o polvilho em uma tigela grande e misture bem com uma colher. Deixe amornar. Adicione os ovos um a um, mexendo bem a cada adição. Por último, acrescente o queijo parmesão ralado e amasse com as mãos até obter uma massa homogênea. Faça bolinhas do tamanho desejado e coloque em uma assadeira (não precisa untar). Asse em forno pré-aquecido a 180°C por cerca de 30 minutos, ou até dourarem."
     },
     {
-        "nome": "Salada de Frutas Colorida",
+        "nome": "Salada",
         "descricao": "Uma opção leve, saudável e deliciosa para qualquer hora do dia.",
         "ingredientes": [
             "1 mamão papaia picado",
@@ -101,7 +101,7 @@ receitas = [
         "modo de preparo": "Em uma tigela grande, misture delicadamente todas as frutas picadas. Regue com o suco de laranja para evitar que as frutas escureçam e para dar mais sabor. Leve à geladeira por pelo menos 30 minutos antes de servir. Opcional: sirva com iogurte natural ou uma bola de sorvete."
     },
     {
-        "nome": "Strogonoff de Frango Simples",
+        "nome": "Strogonoff",
         "descricao": "Um clássico do dia a dia, cremoso e muito saboroso.",
         "ingredientes": [
             "1 kg de peito de frango em cubos",
@@ -130,8 +130,8 @@ def listar_receitas():
 
 @app.get("/receitas/{nome}")
 def buscar_receitas (nome: str):
-    for receitas in receitas:
-        if receitas['nome'].lower() == nome.lower():
+    for receita in receitas:
+        if receita['nome'].lower() == nome.lower():
             return receita
     return {"erro": "Receita nao encontrada"}          
 '''
