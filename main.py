@@ -156,8 +156,8 @@ def get_todas_receitas():
 
 @app.post("/receitas", response_model=Receita, status_code=201)
 def criar_receita(dados: Receita):
-
-    nova_receita = dados
-    receitas.append(nova_receita)
-
-    return nova_receita
+    for r in receitas:
+        if r.nome.lower() == dados.nome.lower():
+            raise HTTPException(status_code=400, detail="Já existe uma receita nova com esse nome.")
+    receitas.append(dados)
+    return dados
