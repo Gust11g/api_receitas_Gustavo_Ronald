@@ -27,9 +27,16 @@ def listar_receitas():
     return receitas
 
 @app.get("/receitas/id/{id}")
-def buscar_receita(id: int):
+def buscar_receita_por_id(id: int):
     for r in receitas: 
         if r.id == id:
+            return r
+    raise HTTPException(status_code=404, detail="Receita não encontrada")
+
+@app.get("/receitas/nome/{nome}")
+def buscar_receita_por_nome(nome: str):
+    for r in receitas:
+        if r.nome.lower() == nome.lower():
             return r
     raise HTTPException(status_code=404, detail="Receita não encontrada")
 
@@ -49,6 +56,11 @@ def criar_receita(dados: CreateReceita):
 def update_receita(id: int, dados: CreateReceita):
     for i in range(len(receitas)):
         if receitas[i].id == id:
+            # Verificar se o novo nome já existe em outra receita
+            for j, r in enumerate(receitas):
+                if j != i and r.nome.lower() == dados.nome.lower():
+                    raise HTTPException(status_code=400, detail="Já existe uma receita com esse nome.")
+
             receita_atualizada = Receita(
                 id= id,
                 nome= dados.nome,
@@ -62,10 +74,10 @@ def update_receita(id: int, dados: CreateReceita):
 @app.delete("/receitas/{id}")
 def deletar_receita(id: int):
     if not receitas:
-       return {"mensagem": "Não há receitas para excluir."}
+       raise HTTPException(status_code=404, detail="Não há receitas para excluir.")
      
     for i in range(len(receitas)):
         if receitas[i].id == id:
-            receitas.pop(i)
-            return {"mensagem": "Receita deletada"}
-    return {"mensagem": "Receita não encontrada"}
+            receita_deletada = receitas.pop(i)
+            return {"mensagem": "Receita deletada", "receita": receita_deletada}
+    raise HTTPException(status_code=404, detail="Receita não encontrada")
