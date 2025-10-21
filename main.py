@@ -1,19 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from typing import List
-
-app = FastAPI(title="Livro de Receitas")
-
-class Receita(BaseModel):
-    id: int
-    nome: str
-    ingredientes: List[str]
-    modo_de_preparo: str
-
-class CreateReceita(BaseModel):
-    nome: str
-    ingredientes: List[str]
-    modo_de_preparo: str
+from schema import CreateReceita, Receita
 
 receitas: List[Receita] = []
 proximo_id = 1 
