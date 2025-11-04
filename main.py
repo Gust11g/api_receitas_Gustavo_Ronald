@@ -2,13 +2,18 @@ from http import HTTPStatus
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
-from schema import Create_Receita, Receita
+import schema
 import utils
 
 app = FastAPI(title="Livro de Receitas")
 
+usuarios:List[Usuario] = []
 receitas: List[Receita] = []
+
 id_receita = 0
+id_user = 0
+
+#Back-End
 
 @app.get("/")
 def hello():
@@ -39,3 +44,28 @@ def update_receita(id: int, dados: Create_Receita):
 @app.delete("/receitas/{id}" , response_model=Receita , status_code=HTTPStatus.OK)
 def deletar_receita(id: int):
     return utils.deletar_receita(receitas, id)
+
+#Usuário
+
+@app.post("/usuarios" , response_model=UsuarioPublic, status_code=HTTPStatus.CREATED)
+def create_usuario(dados: BaseUsuario):
+    for usuario in List[Usuario]:
+        if usuario.email == dados.email:
+             raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Este email já existe")
+
+@app.get("/Usuarios", status_code=HTTPStatus.OK, response_model=List[UsuarioPublic])
+def get_todos_usuarios():
+
+@app.get("/Usuarios/{nome_usuario}", status_code=HTTPStatus.OK, response_model=UsuarioPublic)
+def get_usuarios_por_nome(nome_usuario:str):
+
+@app.get("/Usuarios/{id}", status_code=HTTPStatus.OK, response_model=UsuarioPublic)
+def get_usuarios_por_id(id:int):
+
+@app.put("/usuarios/{id}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
+def update_usuario(id: int, dados: BaseUsuario):
+
+@app.delete("/usuarios/{id}", response_model=UsuarioPublic, status_code=HTTPStatus.OK)
+def delete_usuario(id: int):
+
+
