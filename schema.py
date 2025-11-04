@@ -9,7 +9,7 @@ class Receita(BaseModel):
 
 class Create_Receita(BaseModel):
     nome: str
-    ingredientes: List[str]  # lista normal
+    ingredientes: List[str] 
     modo_de_preparo: str
 
 class Usuario(BaseModel):
