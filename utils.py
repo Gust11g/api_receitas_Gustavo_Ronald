@@ -103,7 +103,7 @@ def create_usuario(dados: schema.BaseUsuario):
         id = id_user,
         nome_usuario = dados.nome_usuario,
         email = dados.email,
-        senha = dados.modo_de_preparosenha
+        senha = dados.senha
     )
     main.usuarios.append(novo_user)
     return novo_user
