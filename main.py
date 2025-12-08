@@ -1,9 +1,12 @@
 import schema 
 import utils
+from models import User
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from database import get_session
 
 app = utils.FastAPI(title="Livro de Receitas")
-
-usuarios: schema.List[schema.Usuario] = []
+ 
 receitas: schema.List[schema.Receita] = []
 
 id_receita = 0
@@ -47,7 +50,7 @@ def deletar_receita(id: int):
 def create_usuario(dados: schema.BaseUsuario):
     global id_user
     id_user += 1
-    return utils.create_usuario(dados)
+    return utils.create_usuario(schema.usuarios, id_user, dados)
 
 @app.get("/Usuarios", status_code=utils.HTTPStatus.OK, response_model=schema.List[schema.UsuarioPublic])
 def get_todos_usuarios():

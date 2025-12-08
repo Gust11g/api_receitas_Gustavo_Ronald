@@ -1,9 +1,15 @@
 from http import HTTPStatus
-from fastapi import FastAPI, HTTPException
-from schema import Create_Receita, Receita
+from fastapi import FastAPI, HTTPException, Depends
+from schema import Create_Receita, Receita, Usuario
+from models import User
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from database import get_session
 import re
 import main
 import schema
+from sqlalchemy.exc import IntegrityError
+
 
 # Funções do Back-End
 
@@ -27,7 +33,7 @@ def get_receita(receitas, id: int):
             return receita
     raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Receita não encontrada")
 
-def create_receita(receitas, id_receita, dados: Create_Receita):
+def create_receita(receitas, id_receita,  dados: Create_Receita):
     for receita in receitas:
         if receita.nome.lower() == dados.nome.lower():
             raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Receita já existe")
@@ -90,43 +96,96 @@ def deletar_receita(receitas, id: int):
 
 # Funções de Usuário
 
-def create_usuario(dados: schema.BaseUsuario):
-    for usuario in main.usuarios:
+def create_usuario(dados: schema.BaseUsuario, session: Session = Depends(get_session)):
+    db_user = session.scalar(select(User).where((User.nome_usuario == dados.nome_usuario) | (User.email == dados.email)))
+
+    if db_user:
+        if db_user.nome_usuario == dados.nome_usuario:
+            raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Nome de usuário já existe",)
+        elif db_user.email == dados.email:
+            raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Email já existe",)
+
+    db_user = User(
+        nome_ususario=dados.nome_usuario, senha=dados.senha, email=dados.email
+    )
+    session.add(db_user)
+    session.commit()
+    sesion.refresh(db_user)
+
+    return db_user
+
+    '''for usuario in main.usuarios:
         if usuario.email == dados.email:
             raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Este email já existe")
     
     if not(re.search(r'[A-Za-z]', dados.senha)) and not(re.search(r'\d', dados.senha)):
         raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail= "A senha deve conter números e letras")
         
-    id_user += 1
-    novo_user = main.Usuario(
+    novo_user = schema.Usuario(
         id = id_user,
         nome_usuario = dados.nome_usuario,
         email = dados.email,
         senha = dados.senha
     )
     main.usuarios.append(novo_user)
-    return novo_user
+    return novo_user'''
 
-def get_todos_usuarios():
-    if len(main.usuarios) == 0:
+def get_todos_usuarios(skip: int = 0, limit: int = 100, session: Session = Depends(get_session)):
+    users = session.scalars(select(User).offset(skip).limit(limit)).all()
+
+    return users
+
+    '''if len(main.usuarios) == 0:
         return {"mensagem": "Não há usuários cadastrados"}
-    return main.usuarios
+    return main.usuarios'''
 
-def get_usuarios_por_nome(nome_usuario:str):
-    for usuario in main.usuarios:
+def get_usuarios_por_nome(nome_usuario: str, sessio: Session = Depends(get_session)):
+    db_user = session.scalar(
+        select(User).where((User.nome_usuario == nome_usuario))
+    )
+    if db_user:
+        return db_user
+
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")
+
+    '''for usuario in main.usuarios:
         if usuario.nome_usuario == nome_usuario:
             return usuario
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")'''
 
-def get_usuarios_por_id(id:int):
-    for usuario in main.usuarios:
+def get_usuarios_por_id(id: int, session: Session = Depends(get_session)):
+    db_user = session.scalar(
+        select(User).where((User.id == id))
+    )
+    if db_user:
+        return db_user
+    
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")
+        
+    '''for usuario in main.usuarios:
         if usuario.id == id:
             return usuario
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")'''
 
-def update_usuario(id: int, dados: schema.BaseUsuario):
-    for i in main.usuarios:
+def update_usuario(id: int, dados: schema.BaseUsuario, session: Session = Depends(get_session)):
+
+    db_user = session.scalar(select(User).where(User.id == id))
+    if not db_user:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")
+    
+    try:
+        db_user.nome_usuario = dados.nome_usuario
+        db_user.senha = dados.senha
+        db_user.email = dados.email
+        session.commit()
+        sesion.refresh(db_user)
+
+        return db_user
+
+    except IntegrityError:
+        raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Nome de usuário ou Email já existe")
+
+    '''for i in main.usuarios:
         if i.email == dados.email:
             raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Este email já existe")
         
@@ -140,10 +199,21 @@ def update_usuario(id: int, dados: schema.BaseUsuario):
         senha = dados.senha
         )
     main.usuarios[i] = usuario_atualizado
-    return usuario_atualizado
+    return usuario_atualizado'''
 
-def delete_usuario(id: int):
-    if len(main.usuarios) == 0:
+def delete_usuario(id: int, session: Session = Depends(get_session)):
+    db_user = session.scalar(select(User).where(User.id == id))
+
+    if not db_user:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")
+    
+
+    session.delete(db_user)
+    session.commit()
+
+    return db_user
+
+    '''if len(main.usuarios) == 0:
          raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="A lista está vazia, não há usuários cadastrados")
          
     for i in range(len(main.usuarios)):
@@ -151,4 +221,4 @@ def delete_usuario(id: int):
             usuario_removido = main.usuarios.pop(i)
             return {"mensagem": f"O usuário {usuario_removido.nome} foi deletado"}
         
-    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")
+    raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")'''
