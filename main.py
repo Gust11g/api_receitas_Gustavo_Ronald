@@ -47,27 +47,25 @@ def deletar_receita(id: int):
 #Usuário
 
 @app.post("/usuarios" , response_model=schema.UsuarioPublic, status_code=utils.HTTPStatus.CREATED)
-def create_usuario(dados: schema.BaseUsuario):
-    global id_user
-    id_user += 1
-    return utils.create_usuario(schema.usuarios, id_user, dados)
+def create_usuario(dados: schema.BaseUsuario, session: Session = utils.Depends(utils.get_session)):
+    return utils.create_usuario(dados, session)
 
 @app.get("/Usuarios", status_code=utils.HTTPStatus.OK, response_model=schema.List[schema.UsuarioPublic])
-def get_todos_usuarios():
-    return utils.get_todos_usuarios()
+def get_todos_usuarios(session: Session = utils.Depends(utils.get_session)):   
+    return utils.get_todos_usuarios(session)
 
 @app.get("/Usuarios/{nome_usuario}", status_code=utils.HTTPStatus.OK, response_model=schema.UsuarioPublic)
-def get_usuarios_por_nome(nome_usuario: str):
-    return utils.get_usuarios_por_nome(nome_usuario)
+def get_usuarios_por_nome(nome_usuario: str, session: Session = utils.Depends(utils.get_session)):   
+    return utils.get_usuarios_por_nome(nome_usuario, session)
 
-@app.get("/Usuarios/{id}", status_code=utils.HTTPStatus.OK, response_model=schema.UsuarioPublic)
-def get_usuarios_por_id(id: int):
-    return utils.get_usuarios_por_id(id)
+@app.get("/Usuarios/id/{id}", status_code=utils.HTTPStatus.OK, response_model=schema.UsuarioPublic)
+def get_usuarios_por_id(id: int, session: Session = utils.Depends(utils.get_session)):   
+    return utils.get_usuarios_por_id(id, session)
 
 @app.put("/usuarios/{id}", response_model=schema.UsuarioPublic, status_code=utils.HTTPStatus.OK)
-def update_usuario(id: int, dados: schema.BaseUsuario):
-    return utils.update_usuario(id, dados)
+def update_usuario(id: int, dados: schema.BaseUsuario, session: Session = utils.Depends(utils.get_session)):   
+    return utils.update_usuario(id, dados, session)
 
 @app.delete("/usuarios/{id}", response_model=schema.UsuarioPublic, status_code=utils.HTTPStatus.OK)
-def delete_usuario(id: int):
-    return utils.delete_usuario(id)
+def delete_usuario(id: int, session: Session = utils.Depends(utils.get_session)):   
+    return utils.delete_usuario(id, session)

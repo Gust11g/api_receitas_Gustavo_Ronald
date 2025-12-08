@@ -6,7 +6,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from database import get_session
 import re
-import main
 import schema
 from sqlalchemy.exc import IntegrityError
 
@@ -18,7 +17,7 @@ def hello():
 
 def get_todas_receitas(receitas):
     if len(receitas) == 0:
-        return {"mensagem": "Não há receitas criadas"}
+        return []
     return receitas
 
 def get_receita_por_nome(receitas, nome_receita: str):
@@ -58,12 +57,9 @@ def update_receita(receitas, id: int, dados: Create_Receita):
     for i in range(len(receitas)):
         if receitas[i].id == id:
             for receita in receitas:
-                if receita.nome.lower() == dados.nome.lower():
-                    raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Receita já existe")
-
-                
-                if receita.nome == "":
-                    raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail= "O campo de nome não pode estar vazio")
+                for j, receita in enumerate(receitas):
+                    if i != j and receita.nome.lower() == dados.nome.lower():
+                        raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Receita já existe")
 
             if not (1 <= len(dados.ingredientes) <= 20):
                 raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail= "A receita deve ter entre 1 e 20 ingredientes")
@@ -90,7 +86,7 @@ def deletar_receita(receitas, id: int):
     for i in range(len(receitas)):
         if receitas[i].id == id:
             receita_removida = receitas.pop(i)
-            return {"mensagem": f"A receita {receita_removida.nome} foi deletada"}
+            return receita_removida
         
     raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Receita não encontrada")
 
@@ -106,11 +102,11 @@ def create_usuario(dados: schema.BaseUsuario, session: Session = Depends(get_ses
             raise HTTPException(status_code=HTTPStatus.CONFLICT, detail="Email já existe",)
 
     db_user = User(
-        nome_ususario=dados.nome_usuario, senha=dados.senha, email=dados.email
+        nome_usuario=dados.nome_usuario, senha=dados.senha, email=dados.email
     )
     session.add(db_user)
     session.commit()
-    sesion.refresh(db_user)
+    session.refresh(db_user)
 
     return db_user
 
@@ -130,7 +126,7 @@ def create_usuario(dados: schema.BaseUsuario, session: Session = Depends(get_ses
     main.usuarios.append(novo_user)
     return novo_user'''
 
-def get_todos_usuarios(skip: int = 0, limit: int = 100, session: Session = Depends(get_session)):
+def get_todos_usuarios(session: Session, skip: int = 0, limit: int = 100):
     users = session.scalars(select(User).offset(skip).limit(limit)).all()
 
     return users
@@ -139,7 +135,7 @@ def get_todos_usuarios(skip: int = 0, limit: int = 100, session: Session = Depen
         return {"mensagem": "Não há usuários cadastrados"}
     return main.usuarios'''
 
-def get_usuarios_por_nome(nome_usuario: str, sessio: Session = Depends(get_session)):
+def get_usuarios_por_nome(nome_usuario: str, session: Session): # REMOVIDO: = Depends(get_session)
     db_user = session.scalar(
         select(User).where((User.nome_usuario == nome_usuario))
     )
@@ -153,7 +149,7 @@ def get_usuarios_por_nome(nome_usuario: str, sessio: Session = Depends(get_sessi
             return usuario
     raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail="Usuário não encontrado")'''
 
-def get_usuarios_por_id(id: int, session: Session = Depends(get_session)):
+def get_usuarios_por_id(id: int, session: Session):
     db_user = session.scalar(
         select(User).where((User.id == id))
     )
@@ -178,7 +174,7 @@ def update_usuario(id: int, dados: schema.BaseUsuario, session: Session = Depend
         db_user.senha = dados.senha
         db_user.email = dados.email
         session.commit()
-        sesion.refresh(db_user)
+        session.refresh(db_user)
 
         return db_user
 
