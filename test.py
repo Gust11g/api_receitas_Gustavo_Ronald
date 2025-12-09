@@ -10,15 +10,15 @@ engine = create_engine("sqlite:///:memory:", echo=False)
 table_registry.metadata.create_all(engine)
 
 with Session(engine) as session:
-    maneu = User(
-        nome_usuario="maneu", 
-        senha="maneu.xp", 
-        email="maneudapop100@gmail.com"
+    Neymar = User(
+        nome_usuario="Neymar", 
+        senha="Neymar.xp", 
+        email="Neymar100@gmail.com"
     )
-    session.add(maneu)
+    session.add(Neymar)
     session.commit()
-    session.refresh(maneu)
+    session.refresh(Neymar)
 
-print(f"DADOS DO USUÁRIO: {maneu}")
-print(f"ID: {maneu.id}")
-print(f"Criado em: {maneu.created_at}")
+print(f"DADOS DO USUÁRIO: {Neymar}")
+print(f"ID: {Neymar.id}")
+print(f"Criado em: {Neymar.created_at}")
