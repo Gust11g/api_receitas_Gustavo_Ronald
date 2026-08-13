@@ -1,8 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from settings import Settings
-engine = create_engine(Settings().DATABASE_URL)
+from models import table_registry
+from settings import settings
+
+connect_args = {"check_same_thread": False} if settings.DATABASE_URL.startswith("sqlite") else {}
+engine = create_engine(settings.DATABASE_URL, connect_args=connect_args)
+table_registry.metadata.create_all(engine)
+
 
 def get_session():
     with Session(engine) as session:
